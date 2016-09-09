@@ -3,24 +3,6 @@ import nconf from 'nconf';
 import R from 'ramda';
 
 
-function avatar(client, evt, suffix) {
-  if (!suffix && !evt.message.mentions.length) {
-    if (!evt.message.author.avatarURL) return Promise.resolve('You are naked.');
-    return Promise.resolve(`Your avatar:\n${evt.message.author.avatarURL}`);
-  } else if (evt.message.mentions.length) {
-    return Promise.resolve(evt.message.mentions)
-      .map(user => {
-        if (!user.avatarURL) return `${user.username} is naked.`;
-        return `${user.username}'s avatar:\n${user.avatarURL}`;
-      });
-  }
-
-  if (evt.message.channel.isPrivate) return Promise.resolve(`Sorry, we can\'t get ${suffix} avatar from a direct message. Try in a channel instead!`);
-  const user = R.find(R.propEq('username', suffix))(evt.message.guild.members);
-  if (!user) return;
-  if (!user.avatarURL) return Promise.resolve(`${user.username} is naked.`);
-  return Promise.resolve(`${user.username}'s avatar:\n${user.avatarURL}`);
-}
 
 function channelinfo(client, evt, suffix) {
   const channelinfo = [];
@@ -134,60 +116,13 @@ Icon: ${guild.iconURL ? `\`\`\`${guild.iconURL}` : `None
   return Promise.resolve(serverinfo);
 }
 
-function userinfo(client, evt, suffix) {
-  const userinfo = [];
-  if (evt.message.channel.isPrivate) {
-    userinfo.push(`\`\`\`Name: ${evt.message.author.username}
-ID: ${evt.message.author.id}
-Discriminator: ${evt.message.author.discriminator}
-Status: ${evt.message.author.status} ${evt.message.author.gameName ? '(Playing ' + evt.message.author.gameName + ')' : ''}
-Registered At: ${evt.message.author.registeredAt}
-Avatar: ${evt.message.author.avatarURL ? `\`\`\`${evt.message.author.avatarURL}` : `None
-\`\`\``}`);
-  } else if (!suffix && !evt.message.mentions.length) {
-    userinfo.push(`\`\`\`Name: ${evt.message.author.username}
-ID: ${evt.message.author.id}
-Discriminator: ${evt.message.author.discriminator}
-Status: ${evt.message.author.status} ${evt.message.author.gameName ? '(Playing ' + evt.message.author.gameName + ')' : ''}
-Registered At: ${evt.message.author.registeredAt}
-Avatar: ${evt.message.author.avatarURL ? `\`\`\`${evt.message.author.avatarURL}` : `None
-\`\`\``}`);
-  } else if (evt.message.mentions.length) {
-    R.forEach(user => {
-      userinfo.push(`\`\`\`Name: ${user.username}
-ID: ${user.id}
-Discriminator: ${user.discriminator}
-Status: ${user.status} ${user.gameName ? '(Playing ' + user.gameName + ')' : ''}
-Registered At: ${user.registeredAt}
-Avatar: ${user.avatarURL ? `\`\`\`${user.avatarURL}` : `None
-\`\`\``}`);
-    }, evt.message.mentions);
-  } else {
-    const user = R.find(R.propEq('username', suffix))(evt.message.guild.members);
-    if (!user) return;
-    userinfo.push(`\`\`\`Name: ${user.username}
-ID: ${user.id}
-Discriminator: ${user.discriminator}
-Status: ${user.status} ${user.gameName ? '(Playing ' + user.gameName + ')' : ''}
-Registered At: ${user.registeredAt}
-Avatar: ${user.avatarURL ? `\`\`\`${user.avatarURL}` : `None
-\`\`\``}`);
-  }
-
-  return Promise.resolve(userinfo);
-}
 
 export const help = {
-  avatar: {parameters: ['username']},
   channelinfo: {parameters: ['channelname']},
   serverinfo: {parameters: ['servername']},
-  userinfo: {parameters: ['username']}
 };
 
 export default {
-  avatar,
   channelinfo,
   serverinfo,
-  userinfo,
-  whois: userinfo
 };
